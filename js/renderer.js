@@ -1,52 +1,46 @@
-/*
-    renderer.js
+import { CONFIG } from '../config.js';
 
-    Purpose:
-    --------
-    Converts the simulation world into pixels on the canvas.
+export class Renderer {
+  constructor(ctx, grid) {
+    this.ctx = ctx;
+    this.grid = grid;
+  }
 
-    Responsibilities:
-    - Read world grid
-    - Translate material IDs into colors
-    - Draw to canvas
+  render() {
+    // Clear canvas
+    this.ctx.fillStyle = CONFIG.COLORS.EMPTY;
+    this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
-    It does NOT:
-    - Simulate physics
-    - Modify world state
-    - Handle input
-*/
-
-import { getGrid, width, height } from "./world.js";
-import { MATERIALS } from "./materials.js";
-import { CONFIG } from "./config.js";
-
-/**
- * Render the entire world to the canvas.
- *
- * @param {CanvasRenderingContext2D} ctx
- */
-export function render(ctx) {
-
-    const grid = getGrid();
-    const pixelSize = CONFIG.PIXEL_SIZE;
-
-    // Loop through every cell in the world
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-
-            const id = grid[y * width + x];
-            const material = MATERIALS[id];
-
-            if (!material) continue;
-
-            ctx.fillStyle = material.color;
-
-            ctx.fillRect(
-                x * pixelSize,
-                y * pixelSize,
-                pixelSize,
-                pixelSize
-            );
+    // Draw each pixel
+    for (let y = 0; y < this.grid.height; y++) {
+      for (let x = 0; x < this.grid.width; x++) {
+        const material = this.grid.get(x, y);
+        if (material !== CONFIG.MATERIAL.EMPTY) {
+          this.drawPixel(x, y, material);
         }
+      }
     }
+  }
+
+  drawPixel(x, y, material) {
+    let color = CONFIG.COLORS.EMPTY;
+
+    if (material === CONFIG.MATERIAL.SAND) {
+      color = CONFIG.COLORS.SAND;
+    } else if (material === CONFIG.MATERIAL.WATER) {
+      color = CONFIG.COLORS.WATER;
+    } else if (material === CONFIG.MATERIAL.STONE) {
+      color = CONFIG.COLORS.STONE;
+    } else if (material === CONFIG.MATERIAL.WOOD) {
+      color = CONFIG.COLORS.WOOD;
+    }
+
+    this.ctx.fillStyle = color;
+    this.ctx.fillRect(
+      x * CONFIG.PIXEL_SIZE,
+      y * CONFIG.PIXEL_SIZE,
+      CONFIG.PIXEL_SIZE,
+      CONFIG.PIXEL_SIZE
+    );
+  }
 }
