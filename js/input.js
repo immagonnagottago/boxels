@@ -7,31 +7,42 @@ export class Input {
     this.currentMaterial = CONFIG.MATERIAL.SAND;
     this.isDrawing = false;
 
-    canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
-    canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
-    canvas.addEventListener('mouseup', () => this.onMouseUp());
-    canvas.addEventListener('mouseleave', () => this.onMouseUp());
+    // Store canvas element for coordinate calculation
+    document.addEventListener('mousedown', (e) => this.onMouseDown(e));
+    document.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    document.addEventListener('mouseup', () => this.onMouseUp());
     window.addEventListener('keydown', (e) => this.onKeyDown(e));
   }
 
   getGridCoords(clientX, clientY) {
     const rect = this.canvas.getBoundingClientRect();
-    // Account for canvas being stretched by CSS - use actual canvas resolution, not display size
-    const scaleX = this.canvas.width / rect.width;
-    const scaleY = this.canvas.height / rect.height;
-    const x = Math.floor((clientX - rect.left) * scaleX);
-    const y = Math.floor((clientY - rect.top) * scaleY);
+    
+    // Canvas resolution vs display size
+    const canvasResX = this.canvas.width;   // 600
+    const canvasResY = this.canvas.height;  // 300
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+    
+    // Mouse position within the display area
+    const relativeX = clientX - rect.left;
+    const relativeY = clientY - rect.top;
+    
+    // Scale to canvas resolution
+    const x = Math.floor((relativeX / displayWidth) * canvasResX / CONFIG.PIXEL_SIZE);
+    const y = Math.floor((relativeY / displayHeight) * canvasResY / CONFIG.PIXEL_SIZE);
+    
     return { x, y };
   }
 
   onMouseDown(e) {
+    if (!this.canvas.getBoundingClientRect()) return;
     this.isDrawing = true;
     const { x, y } = this.getGridCoords(e.clientX, e.clientY);
     this.grid.fill(x, y, CONFIG.BRUSH_RADIUS, this.currentMaterial);
   }
 
   onMouseMove(e) {
-    if (this.isDrawing) {
+    if (this.isDrawing && this.canvas.getBoundingClientRect()) {
       const { x, y } = this.getGridCoords(e.clientX, e.clientY);
       this.grid.fill(x, y, CONFIG.BRUSH_RADIUS, this.currentMaterial);
     }
