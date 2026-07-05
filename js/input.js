@@ -16,8 +16,11 @@ export class Input {
 
   getGridCoords(clientX, clientY) {
     const rect = this.canvas.getBoundingClientRect();
-    const x = Math.floor((clientX - rect.left) / CONFIG.PIXEL_SIZE);
-    const y = Math.floor((clientY - rect.top) / CONFIG.PIXEL_SIZE);
+    // Account for canvas being stretched by CSS - use actual canvas resolution, not display size
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    const x = Math.floor((clientX - rect.left) * scaleX);
+    const y = Math.floor((clientY - rect.top) * scaleY);
     return { x, y };
   }
 
