@@ -3,19 +3,18 @@
 
     Purpose:
     --------
-    This is the application's entry point.
+    Entry point of the engine.
 
-    It is responsible for:
+    Responsibilities:
+    - Initialize canvas
+    - Maintain main loop
+    - Call simulation + renderer in correct order
 
-    - Finding the canvas.
-    - Creating the rendering context.
-    - Starting the engine.
-    - Running the main loop.
-
-    It should NOT contain simulation logic, rendering code,
-    particle behavior, or input handling. Those responsibilities
-    belong to their own modules.
+    This file should stay lightweight and orchestration-only.
 */
+
+import { step as simulationStep } from "./simulation.js";
+import { render as renderWorld } from "./renderer.js";
 
 const canvas = document.getElementById("gameCanvas");
 
@@ -23,46 +22,43 @@ if (!canvas) {
     throw new Error("Could not find #gameCanvas.");
 }
 
-const context = canvas.getContext("2d");
+const ctx = canvas.getContext("2d");
 
-if (!context) {
-    throw new Error("Could not create a 2D rendering context.");
+if (!ctx) {
+    throw new Error("Could not create 2D context.");
 }
 
-// Disable blurry pixel interpolation.
-context.imageSmoothingEnabled = false;
+// Disable smoothing for pixel-perfect rendering
+ctx.imageSmoothingEnabled = false;
 
 /**
- * Resize the canvas to match the browser window.
+ * Resize canvas to full window
  */
-function resizeCanvas() {
+function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
 
-window.addEventListener("resize", resizeCanvas);
-
-resizeCanvas();
+window.addEventListener("resize", resize);
+resize();
 
 /**
- * Main application loop.
- *
- * For now we simply clear the screen each frame.
- * As the engine grows this loop will become:
- *
- * input
- * ↓
- * simulation
- * ↓
- * renderer
+ * Main engine loop
  */
-function frame() {
+function loop() {
 
-    // Background color
-    context.fillStyle = "#202020";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    // 1. SIMULATION STEP (world updates)
+    simulationStep();
 
-    requestAnimationFrame(frame);
+    // 2. CLEAR SCREEN
+    ctx.fillStyle = "#202020";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 3. RENDER WORLD
+    renderWorld(ctx);
+
+    requestAnimationFrame(loop);
 }
 
-requestAnimationFrame(frame);
+// Start engine
+requestAnimationFrame(loop);
