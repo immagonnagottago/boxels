@@ -35,10 +35,10 @@ export class Physics {
       const left = this.grid.get(x - 1, y + 1);
       const right = this.grid.get(x + 1, y + 1);
 
-      if (left === CONFIG.MATERIAL.EMPTY && Math.random() > 0.5) {
+      if (left === CONFIG.MATERIAL.EMPTY && this.grid.inBounds(x - 1, y + 1) && Math.random() > 0.5) {
         this.grid.set(x, y, CONFIG.MATERIAL.EMPTY);
         this.grid.set(x - 1, y + 1, CONFIG.MATERIAL.SAND);
-      } else if (right === CONFIG.MATERIAL.EMPTY) {
+      } else if (right === CONFIG.MATERIAL.EMPTY && this.grid.inBounds(x + 1, y + 1)) {
         this.grid.set(x, y, CONFIG.MATERIAL.EMPTY);
         this.grid.set(x + 1, y + 1, CONFIG.MATERIAL.SAND);
       }
@@ -59,10 +59,10 @@ export class Physics {
     const left = this.grid.get(x - 1, y);
     const right = this.grid.get(x + 1, y);
 
-    if (left === CONFIG.MATERIAL.EMPTY) {
+    if (left === CONFIG.MATERIAL.EMPTY && this.grid.inBounds(x - 1, y)) {
       this.grid.set(x - 1, y, CONFIG.MATERIAL.WATER);
     }
-    if (right === CONFIG.MATERIAL.EMPTY) {
+    if (right === CONFIG.MATERIAL.EMPTY && this.grid.inBounds(x + 1, y)) {
       this.grid.set(x + 1, y, CONFIG.MATERIAL.WATER);
     }
   }
